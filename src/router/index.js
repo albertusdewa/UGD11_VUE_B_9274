@@ -8,14 +8,23 @@ function loadView(view) {
         import ( /* webpackChunkName: "view-[request]" */ `../components/dashboardContents/${view}.vue`)
 }
 const routes = [{
-    path: '/',
+    path: '',
     component: DashboardLayout,
-    children: [{
-        name: 'UserController',
-        path: '',
-        component: loadView('userController')
-    }]
-}, ]
+    children: 
+    [
+        {
+            name: 'UserController',
+            path: '',
+            component: loadView('userController')
+        },
+        {
+            name: 'VehicleController',
+            path: '/vehicle',
+            component: loadView('vehiclesController')
+        },
+    ]
+}, 
+]
 Vue.use(Router)
 const router = new Router({ mode: 'history', routes: routes })
 export default router

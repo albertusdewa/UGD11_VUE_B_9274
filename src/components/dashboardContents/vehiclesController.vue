@@ -2,7 +2,7 @@
     <v-container>   
         <v-card>
             <v-container grid-list-md mb-0>
-                <h2 class="text-md-center">Data User</h2> 
+                <h2 class="text-md-center">Data Vehicles</h2> 
                 <v-layout row wrap style="margin:10px">
                     <v-flex xs6>
                         <v-btn depressed 
@@ -13,7 +13,7 @@
                         @click="dialog = true"
                         >
                         <v-icon size="18" class="mr-2">mdi-pencil-plus</v-icon> 
-                            Tambah User
+                            Tambah Data
                         </v-btn>
                     </v-flex>
                     <v-flex xs6 class="text-right">
@@ -28,7 +28,7 @@
 
                 <v-data-table
                     :headers="headers"
-                    :items="users"
+                    :items="vehicles"
                     :search="keyword"
                     :loading="load"
                 >
@@ -37,9 +37,10 @@
                     <tbody>
                         <tr v-for="(item,index) in items" :key="item.id"> 
                             <td>{{ index + 1 }}</td>
-                            <td>{{ item.name }}</td>
-                            <td>{{ item.email}}</td>
-                            <td>{{ item.password }}</td>
+                            <td>{{ item.merk }}</td>
+                            <td>{{ item.type}}</td>
+                            <td>{{ item.licensePlate }}</td>
+                            <td>{{ item.created_at }}</td>
                             <td class="text-center">
                                 <v-btn 
                                 icon 
@@ -66,19 +67,22 @@
     </v-card>
     <v-dialog v-model="dialog" persistent max-width="600px"> <v-card>
         <v-card-title>
-            <span class="headline">User Profile</span>
+            <span class="headline">User Vehicle</span>
         </v-card-title>
         <v-card-text>
             <v-container>
                 <v-row>
                     <v-col cols="12">
-                        <v-text-field label="Name*" v-model="form.name" required></v-text-field>
+                        <v-text-field label="Merk*" v-model="form.merk" required></v-text-field> 
+                    </v-col>
+                    <v-col cols="12" sm="6" md="4">
+                        <v-select :items="dropdown_font" label="Pilih" v-model="form.type"> </v-select>
                     </v-col>
                     <v-col cols="12">
-                        <v-text-field label="Email*" v-model="form.email" required></v-text-field> 
+                        <v-text-field label="licenseplate*" v-model="form.licensePlate" required></v-text-field>
                     </v-col>
-                    <v-col cols="12">
-                        <v-text-field label="Password*" v-model="form.password" type="password" required></v-text-field>
+                     <v-col cols="12">
+                        <v-text-field label="Tanggal/Waktu*" v-model="form.created_at" required></v-text-field>
                     </v-col>
                 </v-row>
             </v-container>
@@ -111,10 +115,12 @@
 </template>
 
 <script>
+import { log } from 'util'
 export default {
     data () {
         return {
             dialog: false,
+            items: ['Motor', 'Mobil'],
             keyword: '',
             headers: [
                 {
@@ -122,33 +128,39 @@ export default {
                     value: 'no',
                     },
                     {
-                    text: 'Name',
-                    value: 'name'
+                    text: 'Merk',
+                    value: 'merk'
                     },
                     {
-                    text: 'Email',
-                    value: 'email'
+                    text: 'Type',
+                    value: 'type'
                     },
                     {
-                    text: 'Password',
-                    value: 'password'
+                    text: 'licensePlate',
+                    value: 'licensePlate'
+                    },
+                    {
+                    text: 'Created_at',
+                    value: 'created_at'
                     },
                     {
                     text: 'Aksi',
                     value: null
                     },  
             ],
-            users: [],
+            vehicles: [],
+            dropdown_font: ['Motor', 'Mobil'],
             snackbar: false,
             color: null,
             text: '',
             load: false,
             form: {
-                name : '',
-                email : '',
-                password : ''
+                merk : '',
+                type : '',
+                licensePlate : '',
+                created_at : ''
             },
-            user : new FormData,
+            vehicle : new FormData,
             typeInput: 'new',
             errors : '',
             updatedId : '',
@@ -156,19 +168,20 @@ export default {
     },
     methods:{
         getData(){
-            var uri = this.$apiUrl + '/user'
+            var uri = this.$apiUrl + '/Vehicle'
             this.$http.get(uri).then(response =>{
-                this.users=response.data.message
+                this.vehicles=response.data.message
             })
         },
 
         sendData(){
-            this.user.append('name', this.form.name);
-            this.user.append('email', this.form.email);
-            this.user.append('password', this.form.password);
-            var uri =this.$apiUrl + '/user'
+            this.vehicle.append('merk', this.form.merk);
+            this.vehicle.append('type', this.form.type);
+            this.vehicle.append('licensePlate', this.form.licensePlate);
+            this.vehicle.append('created_at', this.form.created_at);
+            var uri =this.$apiUrl + '/Vehicle'
             this.load = true
-            this.$http.post(uri,this.user).then(response =>{
+            this.$http.post(uri,this.vehicle).then(response =>{
                 this.snackbar = true; //mengaktifkan snackbar
                 this.color = 'green'; //memberi warna snackbar
                 this.text = response.data.message; //memasukkan pesan ke snackbar
@@ -186,12 +199,13 @@ export default {
         },
 
         updateData(){
-            this.user.append('name', this.form.name);
-            this.user.append('email', this.form.email);
-            this.user.append('password', this.form.password);
-            var uri = this.$apiUrl + '/user/' + this.updatedId;
+            this.vehicle.append('merk', this.form.merk);
+            this.vehicle.append('type', this.form.type);
+            this.vehicle.append('licensePlate', this.form.licensePlate);
+            this.vehicle.append('created_at', this.form.created_at);
+            var uri = this.$apiUrl + '/Vehicle/' + this.updatedId;
             this.load = true
-            this.$http.post(uri,this.user).then(response =>{
+            this.$http.post(uri,this.vehicle).then(response =>{
                 this.snackbar = true; //mengaktifkan snackbar this.color = 'green'; //memberi warna snackbar
                 this.text = response.data.message; //memasukkan pesan ke snackbar
                 this.load = false;
@@ -212,14 +226,15 @@ export default {
         editHandler(item){
             this.typeInput = 'edit';
             this.dialog = true;
-            this.form.name = item.name;
-            this.form.email = item.email;
-            this.form.password = '',
+            this.form.merk = item.merk;
+            this.form.type = item.type;
+            this.form.licensePlate = item.licensePlate,
+            this.form.created_at = item.created_at,
             this.updatedId = item.id
         },
 
         deleteData(deleteId){
-            var uri=this.$apiUrl + '/user/' + deleteId;
+            var uri=this.$apiUrl + '/Vehicle/' + deleteId;
             this.$http.delete(uri).then(response =>{
                 this.snackbar=true;
                 this.text=response.data.message;
